@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Corrida de Testes de Software</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #d0e6f7, #f0f9ff);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      color: #222;
+    }
+    header {
+      background: #234e70;
+      color: white;
+      padding: 1.2rem 0;
+      font-weight: 700;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+      user-select: none;
+    }
+    #pista {
+      margin: 30px auto;
+      width: 600px;
+      height: 80px;
+      background: #a8c6ea;
+      border-radius: 15px;
+      position: relative;
+      box-shadow: inset 0 0 8px rgba(0,0,0,0.2);
+    }
+    #corredor {
+      width: 60px;
+      height: 60px;
+      background: #2a78d0;
+      border-radius: 50%;
+      position: absolute;
+      top: 10px;
+      left: 0;
+      transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 10px rgba(42, 120, 208, 0.7);
+    }
+    #pergunta {
+      font-size: 1.3rem;
+      margin: 20px auto 15px;
+      max-width: 80%;
+      color: #0d1f38;
+      font-weight: 600;
+      user-select: none;
+    }
+    .alternativa {
+      background-color: #ffffff;
+      border: 2px solid #2a78d0;
+      color: #2a78d0;
+      padding: 12px 24px;
+      border-radius: 12px;
+      margin: 10px 0;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+      display: inline-block;
+      width: 80%;
+      max-width: 400px;
+      font-weight: 600;
+      user-select: none;
+      box-shadow: 0 2px 5px rgba(42, 120, 208, 0.3);
+    }
+    .alternativa:hover {
+      background-color: #2a78d0;
+      color: white;
+      transform: scale(1.07);
+      box-shadow: 0 6px 12px rgba(42, 120, 208, 0.6);
+    }
+    #mensagem {
+      font-weight: 700;
+      margin-top: 20px;
+      min-height: 24px;
+      font-size: 1.25rem;
+      user-select: none;
+    }
+    #vidas {
+      font-size: 1.1rem;
+      color: #d43f3f;
+      margin-top: 10px;
+      font-weight: 600;
+      user-select: none;
+    }
+    #reiniciar, #pular, #rever {
+      margin: 10px 8px;
+      padding: 10px 28px;
+      font-size: 1rem;
+      background-color: #4a90e2;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: none;
+      font-weight: 600;
+      user-select: none;
+      box-shadow: 0 4px 10px rgba(74, 144, 226, 0.6);
+      transition: background-color 0.3s ease;
+    }
+    #reiniciar:hover, #pular:hover, #rever:hover {
+      background-color: #2f6fcc;
+      box-shadow: 0 6px 14px rgba(47, 111, 204, 0.8);
+    }
+    #revisao {
+      max-width: 700px;
+      margin: 0 auto 30px;
+      text-align: left;
+      background: white;
+      border-radius: 15px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      display: none;
+      color: #0d1f38;
+    }
+    #revisao h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      font-weight: 700;
+    }
+    .questao-revisao {
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+    .questao-revisao p {
+      margin: 4px 0;
+    }
+    .resposta-correta {
+      color: #28a745;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Corrida dos Testes de Software</h1>
+  </header>
+
+  <div id="pista">
+    <div id="corredor"></div>
+  </div>
+
+  <div id="pergunta">Carregando pergunta...</div>
+  <div id="alternativas"></div>
+  <div id="mensagem"></div>
+  <div id="vidas"></div>
+  <button id="pular">Pular Questão</button>
+  <button id="reiniciar">Jogar Novamente</button>
+  <button id="rever">Rever Questões Acertadas</button>
+
+  <div id="revisao">
+    <h2>Questões Acertadas</h2>
+    <div id="lista-revisao"></div>
+  </div>
+
+  <script>
+    const perguntas = [
+      { texto: "O que é um teste de unidade?", respostas: [
+          { texto: "Testa componentes isolados do sistema", correta: true },
+          { texto: "Testa a performance", correta: false },
+          { texto: "Testa a interface", correta: false }
+      ]},
+      { texto: "Para que serve o teste de regressão?", respostas: [
+          { texto: "Verificar se mudanças afetaram funcionalidades existentes", correta: true },
+          { texto: "Avaliar usabilidade", correta: false },
+          { texto: "Aumentar cobertura de código", correta: false }
+      ]},
+      { texto: "Qual ferramenta é usada para testes automatizados?", respostas: [
+          { texto: "Selenium", correta: true },
+          { texto: "Photoshop", correta: false },
+          { texto: "Visual Studio Code", correta: false }
+      ]},
+      { texto: "O que é um bug?", respostas: [
+          { texto: "Um erro no software", correta: true },
+          { texto: "Uma melhoria", correta: false },
+          { texto: "Um tipo de teste", correta: false }
+      ]},
+      { texto: "O que o teste de integração verifica?", respostas: [
+          { texto: "Integração entre módulos do sistema", correta: true },
+          { texto: "Velocidade de execução", correta: false },
+          { texto: "Design da interface", correta: false }
+      ]},
+      { texto: "O teste funcional se baseia em:", respostas: [
+          { texto: "Requisitos do sistema", correta: true },
+          { texto: "Tempo de resposta", correta: false },
+          { texto: "Código-fonte", correta: false }
+      ]},
+      { texto: "O que um teste de carga avalia?", respostas: [
+          { texto: "Comportamento sob alto número de usuários", correta: true },
+          { texto: "Design da interface", correta: false },
+          { texto: "Ortografia de textos", correta: false }
+      ]},
+      { texto: "Quando o teste de aceitação é aplicado?", respostas: [
+          { texto: "No fim do desenvolvimento, para validação do cliente", correta: true },
+          { texto: "Antes do planejamento", correta: false },
+          { texto: "Durante o design gráfico", correta: false }
+      ]},
+      { texto: "O que é um caso de teste?", respostas: [
+          { texto: "Cenário com condição de entrada, ação e resultado esperado", correta: true },
+          { texto: "Uma funcionalidade do sistema", correta: false },
+          { texto: "Um erro encontrado", correta: false }
+      ]},
+      { texto: "Teste de usabilidade foca em:", respostas: [
+          { texto: "Facilidade de uso para o usuário final", correta: true },
+          { texto: "Velocidade do sistema", correta: false },
+          { texto: "Qualidade do código", correta: false }
+      ]}
+    ];
+
+    const pista = document.getElementById('pista');
+    const corredor = document.getElementById('corredor');
+    const perguntaEl = document.getElementById('pergunta');
+    const alternativasEl = document.getElementById('alternativas');
+    const mensagemEl = document.getElementById('mensagem');
+    const vidasEl = document.getElementById('vidas');
+    const reiniciarBtn = document.getElementById('reiniciar');
+    const pularBtn = document.getElementById('pular');
+    const reverBtn = document.getElementById('rever');
+    const revisaoDiv = document.getElementById('revisao');
+    const listaRevisao = document.getElementById('lista-revisao');
+
+    let perguntasSorteadas = [];
+    let indice = 0;
+    let acertos = 0;
+    let vidas = 3;
+    const totalPerguntas = 7;
+
+    // Guarda as perguntas que o usuário acertou
+    let acertadas = [];
+
+    function embaralhar(array) {
+      return [...array].sort(() => Math.random() - 0.5);
+    }
+
+    function carregarPerguntas() {
+      perguntasSorteadas = embaralhar(perguntas).slice(0, totalPerguntas);
+    }
+
+    function mostrarPergunta() {
+      atualizarVidas();
+      mensagemEl.textContent = '';
+      const p = perguntasSorteadas[indice];
+      perguntaEl.textContent = p.texto;
+      alternativasEl.innerHTML = '';
+      p.respostas.forEach(res => {
+        const btn = document.createElement('button');
+        btn.className = 'alternativa';
+        btn.textContent = res.texto;
+        btn.onclick = () => verificar(res.correta);
+        alternativasEl.appendChild(btn);
+      });
+      pularBtn.style.display = 'inline-block';
+      revisaoDiv.style.display = 'none';
+      reverBtn.style.display = 'none';
+    }
+
+    function atualizarVidas() {
+      vidasEl.textContent = `Vidas restantes: ${vidas}`;
+    }
+
+    function verificar(correta) {
+      if (correta) {
+        mensagemEl.textContent = 'ACERTOU!';
+        mensagemEl.style.color = '#28a745';
+        acertos++;
+        corredor.style.left = (acertos * 80) + 'px';
+
+        // Guardar a pergunta e resposta correta para revisão
+        acertadas.push(perguntasSorteadas[indice]);
+      } else {
+        mensagemEl.textContent = 'ERROU!';
+        mensagemEl.style.color = '#dc3545';
+        vidas--;
+        atualizarVidas();
+        if (vidas === 0) return fimDoJogo();
+      }
+      indice++;
+      if (indice >= perguntasSorteadas.length) fimDoJogo();
+      else setTimeout(mostrarPergunta, 800);
+    }
+
+    function fimDoJogo() {
+      perguntaEl.textContent = 'Fim do jogo!';
+      alternativasEl.innerHTML = '';
+      mensagemEl.textContent = `Você acertou ${acertos} de ${totalPerguntas} perguntas.`;
+      mensagemEl.style.color = '#1a1a1a';
+      pularBtn.style.display = 'none';
+      reiniciarBtn.style.display = 'inline-block';
+      if (acertos > 0) {
+        reverBtn.style.display = 'inline-block';
+      }
+    }
+
+    reiniciarBtn.onclick = () => {
+      indice = 0;
+      acertos = 0;
+      vidas = 3;
+      corredor.style.left = '0';
+      acertadas = [];
+      reiniciarBtn.style.display = 'none';
+      reverBtn.style.display = 'none';
+      revisaoDiv.style.display = 'none';
+      carregarPerguntas();
+      mostrarPergunta();
+      mensagemEl.textContent = '';
+    };
+
+    pularBtn.onclick = () => {
+      indice++;
+      if (indice >= perguntasSorteadas.length) fimDoJogo();
+      else mostrarPergunta();
+    };
+
+    reverBtn.onclick = () => {
+      // Mostrar a seção de revisão
+      revisaoDiv.style.display = 'block';
+      listaRevisao.innerHTML = '';
+      acertadas.forEach((p, i) => {
+        const div = document.createElement('div');
+        div.className = 'questao-revisao';
+        // Pergunta
+        const perguntaP = document.createElement('p');
+        perguntaP.textContent = `Q${i+1}: ${p.texto}`;
+        // Resposta correta (sempre a que tem correta:true)
+        const respCorreta = p.respostas.find(r => r.correta);
+        const respostaP = document.createElement('p');
+        respostaP.innerHTML = `Resposta correta: <span class="resposta-correta">${respCorreta.texto}</span>`;
+
+        div.appendChild(perguntaP);
+        div.appendChild(respostaP);
+        listaRevisao.appendChild(div);
+      });
+      // Ocultar perguntas e botões para evitar confusão
+      perguntaEl.textContent = '';
+      alternativasEl.innerHTML = '';
+      mensagemEl.textContent = '';
+      vidasEl.textContent = '';
+      pularBtn.style.display = 'none';
+      reiniciarBtn.style.display = 'inline-block';
+      reverBtn.style.display = 'none';
+    };
+
+    // Inicialização
+    carregarPerguntas();
+    mostrarPergunta();
+  </script>
+</body>
+</html>
